@@ -31,6 +31,22 @@ class MainActivity : AppCompatActivity() {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
 
+        // Pega uma instancia do firebase em java e kotlin
+        //val firebaseAuth = FirebaseAuth.getInstance()
+
+        val firebaseAuth = Firebase.auth
+        //cadastraUsuario(firebaseAuth)
+        //autenticaUsuario(firebaseAuth)
+
+        val usuarioFirebase = firebaseAuth.currentUser
+        if (usuarioFirebase != null){
+            Toast.makeText(this, "usuário logado ${usuarioFirebase.email}", Toast.LENGTH_SHORT).show()
+        }else{
+            Toast.makeText(this, "Não tem usuário logado", Toast.LENGTH_SHORT).show()
+        }
+        firebaseAuth.signOut()
+
+
         controlador.addOnDestinationChangedListener { _,
                                                       destination,
                                                       _ ->
@@ -54,5 +70,26 @@ class MainActivity : AppCompatActivity() {
             .setupWithNavController(controlador)
     }
 
+    private fun autenticaUsuario(firebaseAuth: FirebaseAuth) {
+        firebaseAuth.signInWithEmailAndPassword("roberta@aluraesporte.com", "123456")
+            .addOnSuccessListener {
+                Toast.makeText(this, "Usuário logado com sucesso", Toast.LENGTH_SHORT).show()
+            }.addOnFailureListener {
+                Log.e(TAG, "onCreate: ", it)
+                Toast.makeText(this, "autenticação falhou", Toast.LENGTH_SHORT).show()
+            }
+    }
+
+    private fun cadastraUsuario(firebaseAuth: FirebaseAuth) {
+        val tarefa =
+            firebaseAuth.createUserWithEmailAndPassword("roberta.ramos@aluraesporte.com", "123456")
+        tarefa.addOnSuccessListener {
+            Toast.makeText(this, "Usúario foi cadastrado", Toast.LENGTH_SHORT).show()
+        }
+        tarefa.addOnFailureListener {
+            Log.e(TAG, "onCreate", it)
+            Toast.makeText(this, "Falha no cadastrar", Toast.LENGTH_SHORT).show()
+        }
+    }
 
 }
