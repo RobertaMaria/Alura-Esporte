@@ -5,8 +5,11 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import androidx.fragment.app.Fragment
+import androidx.lifecycle.Observer
 import androidx.navigation.fragment.findNavController
 import br.com.alura.aluraesporte.R
+import br.com.alura.aluraesporte.extensions.snackBar
+import br.com.alura.aluraesporte.model.Usuario
 import br.com.alura.aluraesporte.ui.viewmodel.ComponentesVisuais
 import br.com.alura.aluraesporte.ui.viewmodel.EstadoAppViewModel
 import br.com.alura.aluraesporte.ui.viewmodel.LoginViewModel
@@ -37,15 +40,63 @@ class LoginFragment : Fragment() {
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
         estadoAppViewModel.temComponentes = ComponentesVisuais()
-        login_botao_logar.setOnClickListener {
-            viewModel.loga()
-            vaiParaListaProdutos()
-        }
+        configuraBotaoLogin()
+        configuraBotaoCadastro()
+    }
+
+    private fun configuraBotaoCadastro() {
         login_botao_cadastrar_usuario.setOnClickListener {
             val direcao = LoginFragmentDirections
                 .acaoLoginParaCadastroUsuario()
             controlador.navigate(direcao)
         }
+    }
+
+    private fun configuraBotaoLogin() {
+        login_botao_logar.setOnClickListener {
+
+            limpaCampos()
+
+            val email = login_email.editText?.text.toString()
+            val senha = login_senha.editText?.text.toString()
+
+            if (validaCampos(email, senha)) {
+                autentica(email, senha)
+            }
+        }
+    }
+
+    private fun autentica(email: String, senha: String) {
+        viewModel.autentica(Usuario(email, senha)).observe(viewLifecycleOwner, Observer {
+            it?.let {
+                if (it.dado) {
+                    vaiParaListaProdutos()
+                } else {
+                    val mensagemErro = it.erro ?: "Erro duranto a autenticação"
+                    view?.snackBar(mensagemErro)
+                }
+            }
+        })
+    }
+
+    private fun validaCampos(email: String, senha: String): Boolean {
+        var valido = true
+
+        if (email.isBlank()) {
+            login_email.error = "E-mail é obrigatório"
+            valido = false
+        }
+
+        if (senha.isBlank()) {
+            login_senha.error = "Senha é obrigatório"
+            valido = false
+        }
+        return valido
+    }
+
+    private fun limpaCampos() {
+        login_email.error = null
+        login_senha.error = null
     }
 
     private fun vaiParaListaProdutos() {
