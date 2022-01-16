@@ -8,5 +8,6 @@ import br.com.alura.aluraesporte.repository.ProdutoRepository
 class ProdutosViewModel(private val repository: ProdutoRepository) : ViewModel() {
 
     //fun buscaTodos(): LiveData<List<Produto>> = repository.buscaTodos()
-    fun buscaTodos(): LiveData<List<Produto>> = repository.buscaTodosFirestore()
+    //fun buscaTodos(): LiveData<List<Produto>> = repository.buscaTodosFirestore()
+    fun buscaTodos(): LiveData<List<Produto>> = repository.buscaTodosFirestoreEmTempoReal()
 }

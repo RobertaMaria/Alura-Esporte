@@ -25,17 +25,17 @@ class ListaProdutosFragment : BaseFragment() {
         findNavController()
     }
 
+    override fun onCreate(savedInstanceState: Bundle?) {
+        super.onCreate(savedInstanceState)
+        buscaProdutos()
+    }
+
     private fun buscaProdutos() {
         viewModel.buscaTodos().observe(this, Observer { produtosEncontrados ->
             produtosEncontrados?.let {
                 adapter.atualiza(it)
             }
         })
-    }
-
-    override fun onResume() {
-        super.onResume()
-        buscaProdutos()
     }
 
     override fun onCreateView(

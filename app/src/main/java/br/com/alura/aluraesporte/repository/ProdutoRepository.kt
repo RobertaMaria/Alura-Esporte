@@ -1,15 +1,12 @@
 package br.com.alura.aluraesporte.repository
 
-import android.text.BoringLayout
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import br.com.alura.aluraesporte.database.dao.ProdutoDAO
 import br.com.alura.aluraesporte.model.Produto
 import com.google.firebase.firestore.FirebaseFirestore
-import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.firestore.ktx.toObject
-import com.google.firebase.ktx.Firebase
 import java.math.BigDecimal
 
 private const val TAG = "produtoRepository"
@@ -55,6 +52,25 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
 //                        produtos.add(produto)
 //
 //                    }
+                    val produtoDocumento = documento.toObject<ProdutoDocumento>()
+                    produtoDocumento?.let {
+                        produtos.add(it.paraProduto())
+                    }
+                }
+                mutableLiveData.value = produtos
+            }
+        }
+        return mutableLiveData
+    }
+
+    fun buscaTodosFirestoreEmTempoReal(): LiveData<List<Produto>>{
+        val mutableLiveData = MutableLiveData<List<Produto>>()
+        firestore.collection("produtos")
+            .addSnapshotListener { snapshot, exception ->
+            snapshot?.let {
+                val produtos = mutableListOf<Produto>()
+                for (documento in it.documents) {
+                    Log.i(TAG, "onCreate: produto encontrado em tempo real ${documento.data}")
                     val produtoDocumento = documento.toObject<ProdutoDocumento>()
                     produtoDocumento?.let {
                         produtos.add(it.paraProduto())
