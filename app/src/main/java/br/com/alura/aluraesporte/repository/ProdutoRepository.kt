@@ -7,6 +7,7 @@ import br.com.alura.aluraesporte.database.dao.ProdutoDAO
 import br.com.alura.aluraesporte.model.Produto
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
+import com.google.firebase.firestore.ktx.toObject
 import com.google.firebase.ktx.Firebase
 import java.math.BigDecimal
 
@@ -37,21 +38,35 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
         firestore.collection("produtos").get().addOnSuccessListener {
             it?.let {
                 val produtos = mutableListOf<Produto>()
-                for (documento in it) {
+                for (documento in it.documents) {
                     Log.i(TAG, "onCreate: produto encontrado ${documento.data}")
-                    documento.data?.let {dados ->
-                        val nome: String = dados["nome"] as String
-                        val preco: Double = dados["preco"] as Double
-
-                        var produto = Produto(nome = nome, preco = BigDecimal(preco))
-                        produtos.add(produto)
-                        mutableLiveData.value = produtos
+//                    documento.data?.let {dados ->
+//                        val nome: String = dados["nome"] as String
+//                        val preco: Double = dados["preco"] as Double
+//
+//                        val produto = Produto(nome = nome, preco = BigDecimal(preco))
+//                        produtos.add(produto)
+//
+//                    }
+                    val produtoDocumento = documento.toObject<ProdutoDocumento>()
+                    produtoDocumento?.let {
+                        produtos.add(it.paraProduto())
                     }
-
                 }
+                mutableLiveData.value = produtos
             }
         }
         return mutableLiveData
+    }
+
+    private class ProdutoDocumento(
+        val nome: String = "",
+        val preco: Double = 0.0
+    ) {
+        fun paraProduto(): Produto {
+          return  Produto(nome = nome, preco = BigDecimal(preco))
+        }
+
     }
 
 }
