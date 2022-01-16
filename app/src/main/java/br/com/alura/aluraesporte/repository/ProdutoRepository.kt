@@ -1,6 +1,5 @@
 package br.com.alura.aluraesporte.repository
 
-import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import br.com.alura.aluraesporte.database.dao.ProdutoDAO
@@ -10,6 +9,7 @@ import com.google.firebase.firestore.ktx.toObject
 import java.math.BigDecimal
 
 private const val TAG = "produtoRepository"
+private const val COLECAO_FIRESTORE_PRODUTOS = "produtos"
 
 class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: FirebaseFirestore) {
 
@@ -17,9 +17,7 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
 
     fun buscaPorId(id: Long): LiveData<Produto> = dao.buscaPorId(id)
 
-    fun salva(produto: Produto): LiveData<Boolean> {
-        val mutableLiveData = MutableLiveData<Boolean>()
-
+    fun salva(produto: Produto): LiveData<Boolean> = MutableLiveData<Boolean>().apply {
         //val produto = Produto(nome = "Chuteira", preco = BigDecimal(129.99))
 //        val produtoMapeado = mapOf<String, Any>(
 //            "nome" to produto.nome,
@@ -28,53 +26,56 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
 
         val produtoDocumento = ProdutoDocumento(nome = produto.nome, preco = produto.preco.toDouble())
 
-        firestore.collection("produtos").add(produtoDocumento).addOnSuccessListener {
-           mutableLiveData.value = true
+        firestore.collection(COLECAO_FIRESTORE_PRODUTOS).add(produtoDocumento).addOnSuccessListener {
+            value = true
         }.addOnFailureListener{
-            mutableLiveData.value = false
+            value = false
         }
 
-        return mutableLiveData
     }
 
-    fun buscaTodosFirestore(): LiveData<List<Produto>>{
-        val mutableLiveData = MutableLiveData<List<Produto>>()
-        firestore.collection("produtos").get().addOnSuccessListener {
-            it?.let {
-                val produtos = mutableListOf<Produto>()
-                for (documento in it.documents) {
-                    Log.i(TAG, "onCreate: produto encontrado ${documento.data}")
-//                    documento.data?.let {dados ->
-//                        val nome: String = dados["nome"] as String
-//                        val preco: Double = dados["preco"] as Double
-//
-//                        val produto = Produto(nome = nome, preco = BigDecimal(preco))
-//                        produtos.add(produto)
-//
+//    fun buscaTodosFirestore(): LiveData<List<Produto>>{
+//        val mutableLiveData = MutableLiveData<List<Produto>>()
+//        firestore.collection(COLECAO_FIRESTORE_PRODUTOS).get().addOnSuccessListener {
+//            it?.let {
+//                val produtos = mutableListOf<Produto>()
+//                for (documento in it.documents) {
+//                    Log.i(TAG, "onCreate: produto encontrado ${documento.data}")
+////                    documento.data?.let {dados ->
+////                        val nome: String = dados["nome"] as String
+////                        val preco: Double = dados["preco"] as Double
+////
+////                        val produto = Produto(nome = nome, preco = BigDecimal(preco))
+////                        produtos.add(produto)
+////
+////                    }
+//                    val produtoDocumento = documento.toObject<ProdutoDocumento>()
+//                    produtoDocumento?.let {
+//                        produtos.add(it.paraProduto())
 //                    }
-                    val produtoDocumento = documento.toObject<ProdutoDocumento>()
-                    produtoDocumento?.let {
-                        produtos.add(it.paraProduto())
-                    }
-                }
-                mutableLiveData.value = produtos
-            }
-        }
-        return mutableLiveData
-    }
+//                }
+//                mutableLiveData.value = produtos
+//            }
+//        }
+//        return mutableLiveData
+//    }
 
     fun buscaTodosFirestoreEmTempoReal(): LiveData<List<Produto>>{
         val mutableLiveData = MutableLiveData<List<Produto>>()
-        firestore.collection("produtos")
-            .addSnapshotListener { snapshot, exception ->
+        firestore.collection(COLECAO_FIRESTORE_PRODUTOS).addSnapshotListener { snapshot, exception ->
             snapshot?.let {
-                val produtos = mutableListOf<Produto>()
-                for (documento in it.documents) {
-                    Log.i(TAG, "onCreate: produto encontrado em tempo real ${documento.data}")
-                    val produtoDocumento = documento.toObject<ProdutoDocumento>()
-                    produtoDocumento?.let {
-                        produtos.add(it.paraProduto())
-                    }
+//                val produtos = mutableListOf<Produto>()
+//                for (documento in it.documents) {
+//                    Log.i(TAG, "onCreate: produto encontrado em tempo real ${documento.data}")
+//                    val produtoDocumento = documento.toObject<ProdutoDocumento>()
+//                    produtoDocumento?.let {
+//                        produtos.add(it.paraProduto())
+//                    }
+//                }
+//                mutableLiveData.value = produtos
+
+                val produtos = it.documents.mapNotNull { documento ->
+                    documento.toObject<ProdutoDocumento>()?.paraProduto()
                 }
                 mutableLiveData.value = produtos
             }
