@@ -1,5 +1,6 @@
 package br.com.alura.aluraesporte.repository
 
+import android.text.BoringLayout
 import android.util.Log
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
@@ -19,18 +20,24 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
 
     fun buscaPorId(id: Long): LiveData<Produto> = dao.buscaPorId(id)
 
-    fun salva() {
-        val produto = Produto(nome = "Chuteira", preco = BigDecimal(129.99))
-        val produtoMapeado = mapOf<String, Any>(
-            "nome" to produto.nome,
-            "preco" to produto.preco.toDouble()
-        )
+    fun salva(produto: Produto): LiveData<Boolean> {
+        val mutableLiveData = MutableLiveData<Boolean>()
 
-        firestore.collection("produtos").add(produtoMapeado).addOnSuccessListener {
-            it?.let {
-                Log.i(TAG, "onCreate: produto salvo ${it.id}")
-            }
+        //val produto = Produto(nome = "Chuteira", preco = BigDecimal(129.99))
+//        val produtoMapeado = mapOf<String, Any>(
+//            "nome" to produto.nome,
+//            "preco" to produto.preco.toDouble()
+//        )
+
+        val produtoDocumento = ProdutoDocumento(nome = produto.nome, preco = produto.preco.toDouble())
+
+        firestore.collection("produtos").add(produtoDocumento).addOnSuccessListener {
+           mutableLiveData.value = true
+        }.addOnFailureListener{
+            mutableLiveData.value = false
         }
+
+        return mutableLiveData
     }
 
     fun buscaTodosFirestore(): LiveData<List<Produto>>{

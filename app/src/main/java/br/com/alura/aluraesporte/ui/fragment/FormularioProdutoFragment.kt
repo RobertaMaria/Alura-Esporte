@@ -1,19 +1,30 @@
 package br.com.alura.aluraesporte.ui.fragment
 
 import android.os.Bundle
-import androidx.fragment.app.Fragment
 import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
+import androidx.lifecycle.Observer
+import androidx.navigation.fragment.findNavController
 import br.com.alura.aluraesporte.R
+import br.com.alura.aluraesporte.extensions.snackBar
+import br.com.alura.aluraesporte.model.Produto
 import br.com.alura.aluraesporte.ui.viewmodel.ComponentesVisuais
 import br.com.alura.aluraesporte.ui.viewmodel.EstadoAppViewModel
+import br.com.alura.aluraesporte.ui.viewmodel.FormularioProdutoViewlModel
+import kotlinx.android.synthetic.main.formulario_produto.*
 import org.koin.android.viewmodel.ext.android.sharedViewModel
+import org.koin.android.viewmodel.ext.android.viewModel
+import java.math.BigDecimal
 
 
 class FormularioProdutoFragment : BaseFragment() {
 
     private val estadoAppViewModel: EstadoAppViewModel by sharedViewModel()
+    private val viewModel: FormularioProdutoViewlModel by viewModel()
+    private val controlador by lazy {
+        findNavController()
+    }
 
     override fun onCreateView(
         inflater: LayoutInflater, container: ViewGroup?,
@@ -24,7 +35,23 @@ class FormularioProdutoFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        estadoAppViewModel.temComponentes = ComponentesVisuais(appBar = true, bottomNavigation = false)
+        estadoAppViewModel.temComponentes =
+            ComponentesVisuais(appBar = true, bottomNavigation = false)
+
+        formulario_produto_botao_salva.setOnClickListener {
+            val nome = formulario_produto_campo_nome.editText?.text.toString()
+            val preco = formulario_produto_campo_preco.editText?.text.toString()
+            val produto = Produto(nome = nome, preco = BigDecimal(preco))
+            viewModel.salva(produto).observe(viewLifecycleOwner, Observer { salvo ->
+                salvo?.let {
+                    if (salvo) {
+                        controlador.popBackStack()
+                        return@Observer
+                    }
+                    view.snackBar("Falha ao salvar o rpoduto")
+                }
+            })
+        }
     }
 
 }
