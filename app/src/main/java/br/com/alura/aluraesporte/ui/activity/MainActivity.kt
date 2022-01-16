@@ -11,13 +11,13 @@ import androidx.navigation.ui.setupWithNavController
 import br.com.alura.aluraesporte.R
 import br.com.alura.aluraesporte.model.Produto
 import br.com.alura.aluraesporte.ui.viewmodel.EstadoAppViewModel
+import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.firestore
 import com.google.firebase.ktx.Firebase
 import kotlinx.android.synthetic.main.main_activity.*
 import org.koin.android.viewmodel.ext.android.viewModel
 import java.math.BigDecimal
 
-private const val TAG = "MainActivity"
 
 class MainActivity : AppCompatActivity() {
 
@@ -29,29 +29,6 @@ class MainActivity : AppCompatActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.main_activity)
-
-        //Testanto o firestore
-
-        val firestore = Firebase.firestore
-        firestore.collection("produtos").get().addOnSuccessListener {
-            it?.let {
-                for (documentos in it){
-                    Log.i(TAG, "onCreate: produto encontrado ${documentos.data}")
-                }
-            }
-        }
-        val produto = Produto(nome = "Chuteira", preco = BigDecimal(129.99))
-        val produtoMapeado = mapOf<String, Any>(
-            "nome" to produto.nome,
-            "preco" to produto.preco.toDouble()
-        )
-
-        firestore.collection("produtos").add(produtoMapeado).addOnSuccessListener {
-            it?.let {
-                Log.i(TAG, "onCreate: produto salvo ${it.id}")
-            }
-        }
-    //////////////////////////////////////////////
 
         controlador.addOnDestinationChangedListener { _,
                                                       destination,
@@ -75,7 +52,5 @@ class MainActivity : AppCompatActivity() {
         main_activity_bottom_navigation
             .setupWithNavController(controlador)
     }
-
-
 
 }
