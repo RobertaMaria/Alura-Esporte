@@ -49,6 +49,16 @@ class DetalhesProdutoFragment : BaseFragment() {
         super.onCreateOptionsMenu(menu, inflater)
     }
 
+    override fun onOptionsItemSelected(item: MenuItem): Boolean {
+        when(item.itemId){
+            R.id.menu_detalhes_produto_altera ->{
+                DetalhesProdutoFragmentDirections.acaoDetalhesProdutoParaFormularioProduto(produtoId)
+                    .let(controlador::navigate)
+            }
+        }
+        return super.onOptionsItemSelected(item)
+    }
+
 //    private fun configuraBotaoComprar() {
 //        detalhes_produto_botao_comprar.setOnClickListener {
 //            viewModel.produtoEncontrado.value?.let {

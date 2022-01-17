@@ -11,5 +11,9 @@ class FormularioProdutoViewlModel(private val repository: ProdutoRepository): Vi
        return repository.salva(produto)
     }
 
+    fun buscaPorId(produtoAd: String): LiveData<Produto> {
+        return repository.buscaPorId(produtoAd)
+    }
+
 
 }

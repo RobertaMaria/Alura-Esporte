@@ -7,6 +7,7 @@ import br.com.alura.aluraesporte.model.Produto
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
 import java.math.BigDecimal
+import java.math.RoundingMode
 
 private const val TAG = "produtoRepository"
 private const val COLECAO_FIRESTORE_PRODUTOS = "produtos"
@@ -37,6 +38,11 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
 
         val produtoDocumento = ProdutoDocumento(nome = produto.nome, preco = produto.preco.toDouble())
 
+        val colecao = firestore.collection(COLECAO_FIRESTORE_PRODUTOS)
+        val documento = produto.idFirestore?.let {
+            colecao.document(it)
+        }?: colecao.document()
+
         //Adiciona no modo online
 //        firestore.collection(COLECAO_FIRESTORE_PRODUTOS).add(produtoDocumento)
 //            .addOnSuccessListener {
@@ -46,7 +52,7 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
 //        }
 
         //Adiciona no modo offline
-        val documento = firestore.collection(COLECAO_FIRESTORE_PRODUTOS).document()
+        //val documento = firestore.collection(COLECAO_FIRESTORE_PRODUTOS).document()
         documento.set(produtoDocumento)
 
         value = true
@@ -108,7 +114,7 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
         val preco: Double = 0.0
     ) {
         fun paraProduto(id: String): Produto {
-          return  Produto(nome = nome, preco = BigDecimal(preco), idFirestore = id)
+          return  Produto(nome = nome, preco = BigDecimal(preco).setScale(2, RoundingMode.HALF_EVEN), idFirestore = id)
         }
 
     }
