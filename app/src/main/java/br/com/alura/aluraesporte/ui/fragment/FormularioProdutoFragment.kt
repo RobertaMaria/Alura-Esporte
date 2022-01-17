@@ -41,8 +41,42 @@ class FormularioProdutoFragment : BaseFragment() {
 
     override fun onViewCreated(view: View, savedInstanceState: Bundle?) {
         super.onViewCreated(view, savedInstanceState)
-        produtoAd?.let {id ->
-            viewModel.buscaPorId(id).observe(viewLifecycleOwner){ produto ->
+        tentaBuscarProduto()
+
+        estadoAppViewModel.temComponentes = ComponentesVisuais(appBar = true, bottomNavigation = false)
+
+        configuraBotaoSalvar()
+    }
+
+    private fun configuraBotaoSalvar() {
+        formulario_produto_botao_salva.setOnClickListener {
+            val produto = criaProduto()
+            salvaProduto(produto)
+        }
+    }
+
+    private fun salvaProduto(produto: Produto) {
+        viewModel.salva(produto).observe(viewLifecycleOwner, Observer { salvo ->
+            salvo?.let {
+                if (salvo) {
+                    controlador.popBackStack()
+                    return@Observer
+                }
+                view?.snackBar("Falha ao salvar o rpoduto")
+            }
+        })
+    }
+
+    private fun criaProduto(): Produto {
+        val nome = formulario_produto_campo_nome.editText?.text.toString()
+        val preco = formulario_produto_campo_preco.editText?.text.toString()
+        val produto = Produto(idFirestore = produtoAd, nome = nome, preco = BigDecimal(preco))
+        return produto
+    }
+
+    private fun tentaBuscarProduto() {
+        produtoAd?.let { id ->
+            viewModel.buscaPorId(id).observe(viewLifecycleOwner) { produto ->
                 val nome = produto.nome
                 val preco = produto.preco.toString()
 
@@ -50,24 +84,6 @@ class FormularioProdutoFragment : BaseFragment() {
                 formulario_produto_campo_preco.editText?.setText(preco)
                 requireActivity().title = "Altera produto"
             }
-        }
-
-        estadoAppViewModel.temComponentes =
-            ComponentesVisuais(appBar = true, bottomNavigation = false)
-
-        formulario_produto_botao_salva.setOnClickListener {
-            val nome = formulario_produto_campo_nome.editText?.text.toString()
-            val preco = formulario_produto_campo_preco.editText?.text.toString()
-            val produto = Produto(idFirestore = produtoAd, nome = nome, preco = BigDecimal(preco))
-            viewModel.salva(produto).observe(viewLifecycleOwner, Observer { salvo ->
-                salvo?.let {
-                    if (salvo) {
-                        controlador.popBackStack()
-                        return@Observer
-                    }
-                    view.snackBar("Falha ao salvar o rpoduto")
-                }
-            })
         }
     }
 

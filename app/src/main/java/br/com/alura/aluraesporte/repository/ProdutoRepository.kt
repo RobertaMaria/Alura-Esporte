@@ -4,6 +4,7 @@ import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import br.com.alura.aluraesporte.database.dao.ProdutoDAO
 import br.com.alura.aluraesporte.model.Produto
+import com.google.firebase.firestore.DocumentSnapshot
 import com.google.firebase.firestore.FirebaseFirestore
 import com.google.firebase.firestore.ktx.toObject
 import java.math.BigDecimal
@@ -21,13 +22,17 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
         firestore.collection(COLECAO_FIRESTORE_PRODUTOS).document(id)
             .addSnapshotListener{snapshot, exception ->
                 snapshot?.let {
-                    it.toObject<ProdutoDocumento>()?.paraProduto(it.id)?.let {
+                    converteParaProduto(it)
+                        ?.let {
                         value = it
                     }
                 }
 
             }
     }
+
+    private fun converteParaProduto(it: DocumentSnapshot): Produto? =
+        it.toObject<ProdutoDocumento>()?.paraProduto(it.id)
 
     fun salva(produto: Produto): LiveData<Boolean> = MutableLiveData<Boolean>().apply {
         //val produto = Produto(nome = "Chuteira", preco = BigDecimal(129.99))
@@ -101,7 +106,7 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
 //                mutableLiveData.value = produtos
 
                 val produtos = it.documents.mapNotNull { documento ->
-                    documento.toObject<ProdutoDocumento>()?.paraProduto(documento.id)
+                    converteParaProduto(documento)
                 }
                 mutableLiveData.value = produtos
             }
