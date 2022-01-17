@@ -66,12 +66,17 @@ class ListaProdutosFragment : BaseFragment() {
         val divisor = DividerItemDecoration(context, VERTICAL)
         lista_produtos_recyclerview.addItemDecoration(divisor)
         adapter.onItemClickListener = { produtoSelecionado ->
-            vaiParaDetalhesDoProduto(produtoSelecionado.id)
+            produtoSelecionado.idFirestore?.let {
+                vaiParaDetalhesDoProduto(it)
+            }
+
+
+
         }
         lista_produtos_recyclerview.adapter = adapter
     }
 
-    private fun vaiParaDetalhesDoProduto(produtoId: Long) {
+    private fun vaiParaDetalhesDoProduto(produtoId: String) {
         val direcao = ListaProdutosFragmentDirections
             .acaoListaProdutosParaDetalhesProduto(produtoId)
         controlador.navigate(direcao)

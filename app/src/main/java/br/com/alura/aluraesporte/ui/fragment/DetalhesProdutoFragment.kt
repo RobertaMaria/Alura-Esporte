@@ -41,25 +41,30 @@ class DetalhesProdutoFragment : BaseFragment() {
         super.onViewCreated(view, savedInstanceState)
         estadoAppViewModel.temComponentes = ComponentesVisuais(appBar = true)
         buscaProduto()
-        configuraBotaoComprar()
+        //configuraBotaoComprar()
     }
 
-    private fun configuraBotaoComprar() {
-        detalhes_produto_botao_comprar.setOnClickListener {
-            viewModel.produtoEncontrado.value?.let {
-                vaiParaPagamento()
-            }
-        }
+    override fun onCreateOptionsMenu(menu: Menu, inflater: MenuInflater) {
+        inflater.inflate(R.menu.menu_detalhes_produto, menu)
+        super.onCreateOptionsMenu(menu, inflater)
     }
 
-    private fun vaiParaPagamento() {
-        val direcao = DetalhesProdutoFragmentDirections
-            .acaoDetalhesProdutoParaPagamento(produtoId)
-        controlador.navigate(direcao)
-    }
+//    private fun configuraBotaoComprar() {
+//        detalhes_produto_botao_comprar.setOnClickListener {
+//            viewModel.produtoEncontrado.value?.let {
+//                //vaiParaPagamento()
+//            }
+//        }
+//    }
+
+//    private fun vaiParaPagamento() {
+//        val direcao = DetalhesProdutoFragmentDirections
+//            .acaoDetalhesProdutoParaPagamento(produtoId)
+//        controlador.navigate(direcao)
+//    }
 
     private fun buscaProduto() {
-        viewModel.produtoEncontrado.observe(this, Observer {
+        viewModel.produtoEncontrado.observe(viewLifecycleOwner, Observer {
             it?.let { produto ->
                 detalhes_produto_nome.text = produto.nome
                 detalhes_produto_preco.text = produto.preco.formatParaMoedaBrasileira()

@@ -15,7 +15,18 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
 
     //fun buscaTodos(): LiveData<List<Produto>> = dao.buscaTodos()
 
-    fun buscaPorId(id: Long): LiveData<Produto> = dao.buscaPorId(id)
+    //fun buscaPorId(id: Long): LiveData<Produto> = dao.buscaPorId(id)
+    fun buscaPorId(id: String): LiveData<Produto> = MutableLiveData<Produto>().apply {
+        firestore.collection(COLECAO_FIRESTORE_PRODUTOS).document(id)
+            .addSnapshotListener{snapshot, exception ->
+                snapshot?.let {
+                    it.toObject<ProdutoDocumento>()?.paraProduto(it.id)?.let {
+                        value = it
+                    }
+                }
+
+            }
+    }
 
     fun salva(produto: Produto): LiveData<Boolean> = MutableLiveData<Boolean>().apply {
         //val produto = Produto(nome = "Chuteira", preco = BigDecimal(129.99))
@@ -26,11 +37,20 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
 
         val produtoDocumento = ProdutoDocumento(nome = produto.nome, preco = produto.preco.toDouble())
 
-        firestore.collection(COLECAO_FIRESTORE_PRODUTOS).add(produtoDocumento).addOnSuccessListener {
-            value = true
-        }.addOnFailureListener{
-            value = false
-        }
+        //Adiciona no modo online
+//        firestore.collection(COLECAO_FIRESTORE_PRODUTOS).add(produtoDocumento)
+//            .addOnSuccessListener {
+//            value = true
+//        }.addOnFailureListener{
+//            value = false
+//        }
+
+        //Adiciona no modo offline
+        val documento = firestore.collection(COLECAO_FIRESTORE_PRODUTOS).document()
+        documento.set(produtoDocumento)
+
+        value = true
+
 
     }
 
@@ -75,7 +95,7 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
 //                mutableLiveData.value = produtos
 
                 val produtos = it.documents.mapNotNull { documento ->
-                    documento.toObject<ProdutoDocumento>()?.paraProduto()
+                    documento.toObject<ProdutoDocumento>()?.paraProduto(documento.id)
                 }
                 mutableLiveData.value = produtos
             }
@@ -87,8 +107,8 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
         val nome: String = "",
         val preco: Double = 0.0
     ) {
-        fun paraProduto(): Produto {
-          return  Produto(nome = nome, preco = BigDecimal(preco))
+        fun paraProduto(id: String): Produto {
+          return  Produto(nome = nome, preco = BigDecimal(preco), idFirestore = id)
         }
 
     }
