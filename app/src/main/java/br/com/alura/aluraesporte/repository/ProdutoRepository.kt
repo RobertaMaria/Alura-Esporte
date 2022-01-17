@@ -109,6 +109,11 @@ class ProdutoRepository(private val dao: ProdutoDAO, private val firestore: Fire
         return mutableLiveData
     }
 
+    fun remove(produtoId: String): LiveData<Boolean> = MutableLiveData<Boolean>().apply{
+        firestore.collection(COLECAO_FIRESTORE_PRODUTOS).document(produtoId).delete()
+        value = true
+    }
+
     private class ProdutoDocumento(
         val nome: String = "",
         val preco: Double = 0.0

@@ -55,6 +55,11 @@ class DetalhesProdutoFragment : BaseFragment() {
                 DetalhesProdutoFragmentDirections.acaoDetalhesProdutoParaFormularioProduto(produtoId)
                     .let(controlador::navigate)
             }
+            R.id.menu_detalhes_produto_remove ->{
+                viewModel.remove().observe(viewLifecycleOwner){
+                    controlador.popBackStack()
+                }
+            }
         }
         return super.onOptionsItemSelected(item)
     }
